@@ -1,0 +1,96 @@
+{{ define "title" }}{{ .Title | markdownify }} | {{ .Site.Title }}{{ end }}
+
+{{ define "schema-dot-org" }}
+<script type="application/ld+json"> {
+  "@context" : "https://schema.org",
+  "@type" : "BlogPosting",
+  {{ if .Params.categories }}{{ range .Params.categories }}
+  "articleSection" : "About onlyfans, rent and animal crossing",{{ end }}{{ end }}
+  "name" : "{{ .Title | safeJS }}",
+  "headline" : "{{ .Title | safeJS }}",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ .Permalink }}"
+  },
+  "description" : "{{ if .Description }}{{ .Description | plainify }}{{ else }}{{if .IsPage}}{{ .Summary | plainify  }}{{ end }}{{ end }}",
+  "inLanguage" : "{{ .Lang }}",
+  {{ if .Params.author -}}
+    "author": {
+      "@type": "Person",
+      "name": "{{ .Params.author }}"
+  },
+  {{- else if .Site.Author.name -}}
+    "author": {
+      "@type": "Person",
+      "name": "{{ .Site.Author.name }}"
+  },
+  {{- end }}
+  "copyrightYear" : "{{ .Site.LastChange.Format "2006" }}",
+  {{ if not .PublishDate.IsZero -}}
+    "datePublished": "{{ .PublishDate.Format "2006-01-02T15:04:05-07:00" | safeHTML }}",
+  {{- else if not .Date.IsZero -}}
+    "datePublished": "{{ .Date.Format "2006-01-02T15:04:05-07:00" | safeHTML }}",
+  {{- end }}
+  {{ with .Lastmod -}}
+    "dateModified": "{{ .Format "2006-01-02T15:04:05-07:00" | safeHTML }}",
+  {{- end }}
+  "url" : "{{ .Permalink }}",
+  "wordCount" : "{{ .WordCount }}",
+  "image" : "{{ .Params.featured_image }}",
+  "keywords" : "{{ .Title | safeJS }}"
+  "publisher" : {
+    "@type": "Organization",
+    "name" : "{{ .Site.BaseURL }}",
+    "logo" : {
+        "@type" : "ImageObject",
+        "url" : "{{ .Site.Params.logo | absURL }}",
+        "height" :  60 ,
+        "width" :  60
+    }
+  }
+} </script>
+
+{{ end }}
+
+{{ define "main" }}
+{{ $dateFormat := default "Mon Jan 2, 2006" (index .Site.Params "date_format") }}
+
+<article class="blog-post">
+  <header>
+    <h2 class="blog-post-title" dir="auto"><a href="{{ .Permalink }}">{{ .Title | markdownify }}</a></h2>
+    <p class="blog-post-meta">
+{{ if not .PublishDate.IsZero }}<time {{ .Date.Format "2006-01-02T15:04:05Z07:00" | printf "datetime=%q" | safeHTMLAttr }}>{{ .Date.Format $dateFormat }}</time>{{ end }}
+{{ if or (.Params.categories) (.Params.tags) }} {{ i18n "postedIn" }} {{ partial "meta-terms.html" . }}{{ end }}</p>
+  </header>
+  {{ .Content }}
+
+  {{ if .IsTranslated }}
+  <h4>{{ i18n "translations" }}</h4>
+  <ul>
+    {{ range .Translations }}
+    <li>
+      <a href="{{ .Permalink }}">{{ .Lang }}: {{ .Title }}{{ if .IsPage }}{{ end }}</a>
+    </li>
+    {{ end }}
+  </ul>
+  {{ end }}
+
+  {{ if or (ne ($.Param "sharingicons") false) (.Site.DisqusShortname) }}
+  <hr>
+  <footer>
+
+  {{ if (ne ($.Param "sharingicons") false) }}
+  {{ partial "sharing-icons.html" . }}
+  {{ end }}
+
+  {{ if and (.Site.DisqusShortname) (ne .Params.comments false) }}
+  {{ template "_internal/disqus.html" . }}
+  {{ end }}
+  </footer>
+  {{ end }}
+
+</article> <!-- /.blog-post -->
+
+{{ end }}
+
+{{- /* vim: set ts=2 sw=2 et: */}}

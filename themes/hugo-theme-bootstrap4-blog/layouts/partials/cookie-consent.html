@@ -1,0 +1,40 @@
+{{ $cookieConsentScript := resources.Get "js/haven.umd.min.js" | resources.Fingerprint }}
+<script src="{{ $cookieConsentScript.Permalink }}"{{ if not .Site.Params.disable_sri }} integrity="{{ $cookieConsentScript.Data.Integrity }}" crossorigin="anonymous"{{ end }}></script>
+
+<script>
+Haven.create({
+    notification: {
+        {{ with .Site.Params.cookie_consent_info_url -}}
+        policyUrl: {{ . | absURL }},
+        {{- end }}
+        styles: {
+            background: '#428bca',
+            textColor: '#ffffff',
+            buttonBackgroundColor: '#f71559',
+            buttonTextColor: '#ffffff',
+        },
+    },
+    translations: {
+      {{ .Lang }}: {
+            notification: {
+                policy: '{{ i18n "cookieLink" }}',
+                message: '{{ i18n "cookieMessage" }}',
+                accept: '{{ i18n "cookieAccept" }}',
+                decline: '{{ i18n "cookieDecline" }}',
+            }
+        },
+    },
+    services: [
+        {
+            name: 'google-analytics',
+            options: {
+                    id: {{ .Site.GoogleAnalytics }},
+            },
+            purposes: ['analytics'],
+            inject: true,
+        }
+    ]
+});
+</script>
+
+{{- /* vim: set ts=2 sw=2 et: */}}
